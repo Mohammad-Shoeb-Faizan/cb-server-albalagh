@@ -31,29 +31,27 @@ const Chatbot = mongoose.model('Chatbot', chatbotSchema);
 app.use(bodyParser.json());
 
 // Create a new chatbot entry
-app.post('/api/chatbot', (req, res) => {
+app.post('/api/chatbot', async (req, res) => {
   const { name, url, data } = req.body;
 
   const newChatbotData = new Chatbot({ name, url, data });
 
-  newChatbotData.save((err) => {
-    if (err) {
-      res.status(500).json({ error: 'Unable to save data to chatbot collection' });
-    } else {
-      res.json({ message: 'Data saved to chatbot collection successfully' });
-    }
-  });
+  try {
+    await newChatbotData.save();
+    res.json({ message: 'Data saved to chatbot collection successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Unable to save data to chatbot collection' });
+  }
 });
 
 // Retrieve all chatbot entries
-app.get('/api/chatbot', (req, res) => {
-  Chatbot.find({}, (err, chatbotData) => {
-    if (err) {
-      res.status(500).json({ error: 'Unable to retrieve data from chatbot collection' });
-    } else {
-      res.json(chatbotData);
-    }
-  });
+app.get('/api/chatbot', async (req, res) => {
+  try {
+    const chatbotData = await Chatbot.find({}).exec();
+    res.json(chatbotData);
+  } catch (err) {
+    res.status(500).json({ error: 'Unable to retrieve data from chatbot collection' });
+  }
 });
 
 // Start the server
